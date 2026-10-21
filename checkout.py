@@ -1,3 +1,4 @@
+from decimal import Decimal
 import json
 from datetime import date
 
@@ -54,10 +55,11 @@ def calcular_subtotal(carrito):
 
 
 def calcular_descuento(subtotal, cantidad_prendas, cupon=None, fecha=date.today()):
-    descuento = 0
+    descuento_cantidad = Decimal("0")
+    descuento_cupon = Decimal("0")
 
     if cantidad_prendas > 5:
-        descuento += subtotal * 0.10
+        descuento_cantidad = subtotal * Decimal("0.10")
 
     if cupon != None:
         codigo = cupon.strip()
@@ -70,7 +72,7 @@ def calcular_descuento(subtotal, cantidad_prendas, cupon=None, fecha=date.today(
         if datos["tipo"] == "porcentaje":
             if not fecha < datos["vence"]:
                 raise CheckoutError("CUPON_VENCIDO", "El cupón está vencido")
-            descuento += subtotal * datos["valor"]
+            descuento_cupon = subtotal * datos["valor"]
 
         elif datos["tipo"] == "fijo":
             if subtotal < datos["minimo"]:
@@ -78,9 +80,9 @@ def calcular_descuento(subtotal, cantidad_prendas, cupon=None, fecha=date.today(
                     "CUPON_MINIMO_NO_ALCANZADO",
                     f"El cupón requiere una compra mínima de ${datos['minimo']}",
                 )
-            descuento += datos["valor"]
+            descuento_cupon = datos["valor"]
 
-    return round(descuento, 2)
+    return round(max(descuento_cantidad, descuento_cupon))
 
 
 def calcular_envio(subtotal, zona):
