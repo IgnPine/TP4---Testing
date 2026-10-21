@@ -32,3 +32,10 @@ def test_cantidad_cero_es_invalida():
 def test_cupones_son_solo_los_esperados():
     assert set(CUPONES) == {"EGRESADOS2026", "BIENVENIDA"}
     assert len(CUPONES) == 2
+
+def test_precio_enviado_por_el_cliente_se_ignora_en_el_subtotal():
+    carrito = [item("buzo", cantidad=1, precio=1)]
+
+    subtotal = calcular_subtotal(carrito)
+
+    assert subtotal == Decimal("24999.90")
