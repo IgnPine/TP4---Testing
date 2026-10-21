@@ -46,3 +46,11 @@ def test_cupon_porcentual_mayor_que_descuento_por_cantidad_aplica_solo_el_cupon(
     resultado = calcular_total(carrito, "RETIRO", "EGRESADOS2026", HOY_VIGENTE)
 
     assert resultado["descuento"] == Decimal("10799.55")
+
+def test_envio_gratis_se_evalua_sobre_el_subtotal_ya_descontado():
+    carrito = [item("buzo", cantidad=2), item("remera", cantidad=1)]
+
+    resultado = calcular_total(carrito, "CABA", "EGRESADOS2026", HOY_VIGENTE)
+
+    assert resultado["envio"] == Decimal("2500.00")
+    assert resultado["total"] == Decimal("55199.40")
