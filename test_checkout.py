@@ -54,3 +54,16 @@ def test_envio_gratis_se_evalua_sobre_el_subtotal_ya_descontado():
 
     assert resultado["envio"] == Decimal("2500.00")
     assert resultado["total"] == Decimal("55199.40")
+
+def test_calcular_total_devuelve_todos_los_importes_como_decimal():
+    carrito = [item("buzo", cantidad=2)]
+
+    resultado = calcular_total(carrito, "CABA", fecha=HOY_VIGENTE)
+
+    tipos = {clave: type(valor) for clave, valor in resultado.items()}
+    assert tipos == {
+        "subtotal": Decimal,
+        "descuento": Decimal,
+        "envio": Decimal,
+        "total": Decimal,
+    }
