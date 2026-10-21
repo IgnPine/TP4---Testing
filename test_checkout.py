@@ -39,3 +39,10 @@ def test_precio_enviado_por_el_cliente_se_ignora_en_el_subtotal():
     subtotal = calcular_subtotal(carrito)
 
     assert subtotal == Decimal("24999.90")
+
+def test_cupon_porcentual_mayor_que_descuento_por_cantidad_aplica_solo_el_cupon():
+    carrito = [item("remera", cantidad=6)]
+
+    resultado = calcular_total(carrito, "RETIRO", "EGRESADOS2026", HOY_VIGENTE)
+
+    assert resultado["descuento"] == Decimal("10799.55")
