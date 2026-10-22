@@ -1,6 +1,5 @@
-from decimal import ROUND_HALF_UP, Decimal
-import json
 from datetime import date
+from decimal import ROUND_HALF_UP, Decimal
 
 
 class CheckoutError(Exception):
@@ -33,7 +32,17 @@ ENVIOS = {
 ENVIO_GRATIS_DESDE = Decimal("60000.00")
 CENTAVO = Decimal("0.01")
 
+def redondear(importe):
+    return importe.quantize(CENTAVO, rounding=ROUND_HALF_UP)
+
+
 def validar_item(item):
+    if item.get("producto") not in CATALOGO:
+        raise CheckoutError(
+            "PRODUCTO_INEXISTENTE",
+            f"Producto inexistente: {item.get('producto')!r}",
+        )
+
     item["talle"] = item["talle"].upper()
 
     if item["talle"] not in TALLES:
@@ -47,13 +56,9 @@ def calcular_subtotal(carrito):
     subtotal = Decimal("0")
     for item in carrito:
         validar_item(item)
-        try:
-            precio = CATALOGO[item["producto"]]
-        except:
-            continue
-        subtotal += precio * item["cantidad"]
+        subtotal += CATALOGO[item["producto"]] * item["cantidad"]
 
-    return round(subtotal)
+    return redondear(subtotal)
 
 
 def calcular_descuento(subtotal, cantidad_prendas, cupon=None, fecha=date.today()):
@@ -84,7 +89,7 @@ def calcular_descuento(subtotal, cantidad_prendas, cupon=None, fecha=date.today(
                 )
             descuento_cupon = datos["valor"]
 
-    return round(max(descuento_cantidad, descuento_cupon))
+    return redondear(max(descuento_cantidad, descuento_cupon))
 
 
 def calcular_envio(subtotal, zona):
@@ -117,6 +122,6 @@ def calcular_total(carrito, zona, cupon=None, fecha=date.today()):
         "subtotal": subtotal,
         "descuento": descuento,
         "envio": envio,
-        "total": round(total, 2),
+        "total": redondear(total),
     }
     return resultado
