@@ -41,3 +41,40 @@ def test_una_ruta_inexistente_devuelve_404(url):
     status, cuerpo = pedir(url, "GET", "/api/v1/otra")
     assert status == 404
     assert cuerpo["error"]["code"] == "RUTA_INEXISTENTE"
+
+# ---------- R11 · CheckoutError -> 422 con el code del error ----------
+
+def test_error_de_negocio_devuelve_422_con_el_code_del_checkout_error(url):
+    cuerpo_pedido = compra(carrito=[{"producto": "buzo", "talle": "XXXL", "cantidad": 1}])
+
+    status, cuerpo = pedir(url, "POST", RUTA, cuerpo_pedido)
+
+    assert status == 422
+    assert cuerpo["error"]["code"] == "TALLE_INVALIDO"
+
+
+# ---------- R11 · cuerpo que no es JSON -> 400 JSON_INVALIDO ----------
+
+def test_cuerpo_que_no_es_json_devuelve_400_json_invalido(url):
+    status, cuerpo = pedir(url, "POST", RUTA, crudo=b"{esto no es json")
+
+    assert status == 400
+    assert cuerpo["error"]["code"] == "JSON_INVALIDO"
+
+
+# ---------- R11 · fecha con formato incorrecto -> 400 FECHA_INVALIDA ----------
+
+def test_fecha_con_formato_distinto_de_aaaa_mm_dd_devuelve_400_fecha_invalida(url):
+    status, cuerpo = pedir(url, "POST", RUTA, compra(fecha="30/11/2026"))
+
+    assert status == 400
+    assert cuerpo["error"]["code"] == "FECHA_INVALIDA"
+
+
+# ---------- R11 · pedido que no existe -> 404 PEDIDO_INEXISTENTE ----------
+
+def test_consultar_un_pedido_que_no_existe_devuelve_404_pedido_inexistente(url):
+    status, cuerpo = pedir(url, "GET", RUTA + "/999")
+
+    assert status == 404
+    assert cuerpo["error"]["code"] == "PEDIDO_INEXISTENTE"
